@@ -4,14 +4,13 @@ This is my build of the demo app found on the [JSONAPI::Resources](https://jsona
 website.
 
 
-### Create a new Rails application
+#### Create a new Rails application
 ```
 rails new jsonapi-peeps -d sqlite3 --skip-javascript
-
 ```
 
 
-### Create the databases
+## Create the databases
 ```
 bin/rails db:create
 ```
