@@ -10,22 +10,21 @@ rails new jsonapi-peeps -d sqlite3 --skip-javascript
 ```
 
 
-## Create the databases
+#### Create the databases
 ```
 bin/rails db:create
 ```
 
 
-### Add the JSONAPI-Resources gem
+#### Add the JSONAPI-Resources gem
 
-Add the gem to your Gemfile
-```
+Add the gem to your Gemfile then run `bundle install`.
+```ruby
 gem 'jsonapi-resources'
 ```
-Then `bundle install`
 
 
-### Application Controller
+#### Application Controller
 
 Make the following changes to application_controller.rb
 ```ruby
@@ -49,14 +48,14 @@ You can also do this on a per controller basis in your app, if only some
 controllers will serve the API.
 
 
-### Configure Development Environment
+#### Configure Development Environment
 
 Edit `config/environments/development.rb`
 
 Eager loading of classes is recommended. The code will work without it, but
-I think it’s the right way to go. See [http://blog.plataformatec.com.br/2012/08/eager-loading-for-greater-good/](http://blog.plataformatec.com.br/2012/08/eager-loading-for-greater-good/)
+I think it’s the right way to go. See [eager-loading-for-greater-good](http://blog.plataformatec.com.br/2012/08/eager-loading-for-greater-good/)
 for more details.
-```
+```ruby
 # Eager load code on boot so JSONAPI-Resources resources are loaded and processed globally
 config.eager_load = true
 
@@ -67,20 +66,20 @@ when an exception happens. Not strictly necessary, but it makes for nicer
 output when debugging using curl or a client library.
 
 
-### CORS - optional
+#### CORS - optional
 
 You might run into CORS issues when accessing from the browser. You can use the
-`rack-cors` gem to allow sharing across origins. See [https://github.com/cyu/rack-cors for more details](https://github.com/cyu/rack-cors) for more details.
+`rack-cors` gem to allow sharing across origins. See [https://github.com/cyu/rack-cors](https://github.com/cyu/rack-cors) for more details.
 
 Add the gem to your Gemfile
-```
+```ruby
 gem 'rack-cors'
 ```
-Add the CORS middleware to your config/application.rb:
+Add the CORS middleware to your `config/application.rb`:
 ```ruby
 # Example only, please understand CORS before blindly adding this configuration
 # This is not enabled in the peeps source code.
-module Peeps
+module JsonapiPeeps
   class Application < Rails::Application
     config.middleware.insert_before 0, 'Rack::Cors', :debug => !Rails.env.production?, :logger => (-> { Rails.logger }) do
       allow do
@@ -93,7 +92,7 @@ end
 ```
 
 
-### Create Models for our data
+#### Create Models for our data
 
 Use the standard rails generator to create a model for `Contacts` and one for
 related `PhoneNumbers`.
@@ -111,7 +110,7 @@ class Contact < ActiveRecord::Base
 end
 ```
 
-Create the PhoneNumber model
+Create the `PhoneNumber` model
 ```
 rails g model PhoneNumber contact_id:integer name:string phone_number:string
 ```
@@ -123,13 +122,13 @@ end
 ```
 
 
-### Migrate the DB
+#### Migrate the DB
 ```
 bin/rails db:migrate
 ```
 
 
-### Create Controllers
+#### Create Controllers
 
 Use the rails generator to create empty controllers. These will be inherit
 methods from the ResourceController so they will know how to respond to the
@@ -140,7 +139,7 @@ rails generate controller Api::V1::PhoneNumbers --skip-assets
 ```
 
 
-### Create our resources directory
+#### Create our resources directory
 
 We need a directory to hold our resources. Let'ss put in under our app directory.
 ```
@@ -150,7 +149,7 @@ mkdir app/resources/api/v1
 ```
 
 
-### Create the resources
+#### Create the resources
 
 Create a new file for each resource. This must be named in a standard way so
 it can be found. This should be the single underscored name of the model
@@ -179,7 +178,7 @@ end
 ```
 
 
-### Setup routes
+#### Setup routes
 
 Add the routes for the new resources
 ```ruby
@@ -192,7 +191,7 @@ Add the routes for the new resources
 ```
 
 
-### Test it out
+#### Test it out
 
 ```
 bin/rails server
@@ -316,19 +315,20 @@ You should get back something like this:
 }
 ```
 
-### Handling More Data
+
+#### Handling More Data
 
 The earlier responses seem pretty snappy, but they are not really returning a
 lot of data. In a real world system there will be a lot more data. Lets mock
 some with the faker gem.
 
 Add the `faker` gem to your Gemfile
-```
+```ruby
 gem 'faker', group: [:development, :test]
 ```
 
 Let's also add and use the [ruby-progressbar](https://github.com/jfelchner/ruby-progressbar):
-```
+```ruby
 gem 'ruby-progressbar'
 ```
 
@@ -369,7 +369,7 @@ bin/rails db:seed
 ```
 
 
-### Large requests take to long to complete
+#### Large requests take to long to complete
 
 Now if we query our contacts we will get a large (20K contacts) dataset back,
 and it may run for many seconds.
@@ -378,7 +378,7 @@ curl -H "Accept: application/vnd.api+json" "http://localhost:3000/api/v1/contact
 ```
 
 
-### Options
+#### Options
 
 There are some things we can do to work around this. First we should add a
 config file to our initializers. Add a file named `jsonapi_resources.rb` to the
@@ -392,7 +392,7 @@ end
 
 
 
-### Caching
+#### Caching
 
 We can enable caching so the next request will not require the system to
 process all 20K records again.
@@ -431,14 +431,14 @@ end
 If we restart the application and make the same request it will still take the
 same amount of time (actually a tiny bit more as the resources are added to the
 cache). However if we perform the same request the time should drop
-significantly, going from ~8s to ~1.6s on my system for the same 20K contacts.
+significantly.
 
 We might be able to live with performance of the cached results, but we should
 plan for the worst case. So we need another solution to keep our responses
 snappy.
 
 
-### Pagination
+#### Pagination
 
 Instead of returning the full result set when the user asks for it, we can break
 it into smaller pages of data. That way the server never needs to serialize
