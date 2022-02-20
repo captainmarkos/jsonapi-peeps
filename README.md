@@ -404,3 +404,90 @@ the following:
 ```
 bin/rails dev:cache
 ```
+
+To enable caching of JSONAPI responses we need to specify which cache to use
+(and in version v0.10.x and later that we want all resources cached by default).
+So add the following to the initializer you created earlier:
+```ruby
+JSONAPI.configure do |config|
+  config.resource_cache = Rails.cache
+
+  # The following option works in versions v0.10 and later
+  #config.default_caching = true
+ end
+end
+```
+
+If using an earlier version than v0.10.x we need to enable caching for each
+resource type we want the system to cache. Add the following line to the
+`contacts` resource:
+
+```ruby
+class Api::V1::ContactResource < JSONAPI::Resource
+  caching
+  # ...
+end
+```
+
+If we restart the application and make the same request it will still take the
+same amount of time (actually a tiny bit more as the resources are added to the
+cache). However if we perform the same request the time should drop
+significantly, going from ~8s to ~1.6s on my system for the same 20K contacts.
+
+We might be able to live with performance of the cached results, but we should
+plan for the worst case. So we need another solution to keep our responses
+snappy.
+
+
+### Pagination
+
+Instead of returning the full result set when the user asks for it, we can break
+it into smaller pages of data. That way the server never needs to serialize
+every resource in the system at once.
+
+We can add pagination with a config option in the initializer. Add the following
+to `config/initializers/jsonapi_resources.rb`:
+
+```ruby
+JSONAPI.configure do |config|
+  # config.resource_cache = Rails.cache # before v0.10
+  config.default_caching = true
+
+  # Options are :none, :offset, :paged, or a custom paginator name
+  config.default_paginator = :paged # default is :none
+
+  config.default_page_size = 5 # default is 10
+  config.maximum_page_size = 100 # default is 20 
+end
+```
+
+Restart the app and try the request again:
+```
+curl -H "Accept: application/vnd.api+json" "http://localhost:3000/api/v1/contacts"
+```
+
+Now we only get the first 50 contacts back, and the request is much faster.  And
+you will now see a links key with links to get the remaining resources in your
+set.  This should look like this:
+
+```javascript
+{
+  data: [...],
+
+  "links" : {
+    "first" : "http://localhost:3000/api/v1/contacts?page%5Bnumber%5D=1&page%5Bsize%5D=5",
+    "last" : "http://localhost:3000/api/v1/contacts?page%5Bnumber%5D=4200&page%5Bsize%5D=5",
+    "next" : "http://localhost:3000/api/v1/contacts?page%5Bnumber%5D=2&page%5Bsize%5D=5"
+  }
+}
+```
+
+This will allow your client to iterate over the next links to fetch the full
+results set without putting extreme pressure on your server.
+
+The default_page_size setting is used if the request does not specify a size,
+and the maximum_page_size is used to limit the size the client may request.
+
+Note: The default page sizes are very conservative. There is significant
+overhead in making many small requests, and tuning the page sizes should be
+considered essential. 
