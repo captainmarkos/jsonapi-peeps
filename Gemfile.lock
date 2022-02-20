@@ -82,6 +82,7 @@ GEM
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
     childprocess (4.1.0)
+    coderay (1.1.3)
     concurrent-ruby (1.1.9)
     crass (1.0.6)
     debug (1.4.0)
@@ -136,6 +137,9 @@ GEM
     nokogiri (1.13.1)
       mini_portile2 (~> 2.7.0)
       racc (~> 1.4)
+    pry (0.14.1)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
     public_suffix (4.0.6)
     puma (5.6.2)
       nio4r (~> 2.0)
@@ -236,6 +240,7 @@ DEPENDENCIES
   debug
   jbuilder
   jsonapi-resources
+  pry
   puma (~> 5.0)
   rack-cors
   rails (~> 7.0.2, >= 7.0.2.2)
