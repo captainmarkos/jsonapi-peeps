@@ -1,20 +1,26 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Examples:
-#
-#   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
-#   Character.create(name: "Luke", movie: movies.first)
+progressbar = ProgressBar.create(title: 'Creating seed data', total: 1_000)
 
-Contact.create(
-  name_first: 'Luke',
-  name_last: 'Skywalker',
-  email: 'jediknight@yahoo.com',
-  twitter: 'is gay'
-)
+contacts = 500.times.map do |_i|
+  progressbar.increment
 
-PhoneNumber.create(
-  contact: Contact.first,
-  name: 'foo',
-  phone_number: '810-765-5365'
-)
+  Contact.create({
+    name_first: Faker::Name.first_name,
+    name_last: Faker::Name.last_name,
+    email: Faker::Internet.safe_email,
+    twitter: "@#{Faker::Internet.user_name}"
+  })
+end
+
+contacts.each do |contact|
+  progressbar.increment
+
+  contact.phone_numbers.create({
+    name: 'cell',
+    phone_number: Faker::PhoneNumber.cell_phone
+  })
+
+  contact.phone_numbers.create({
+    name: 'home',
+    phone_number: Faker::PhoneNumber.phone_number
+  })
+end
