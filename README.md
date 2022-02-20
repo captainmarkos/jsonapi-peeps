@@ -68,13 +68,14 @@ output when debugging using curl or a client library.
 
 #### CORS - optional
 
-You might run into CORS issues when accessing from the browser. You can use the
+You *might* run into CORS issues when accessing from the browser. You can use the
 `rack-cors` gem to allow sharing across origins. See [https://github.com/cyu/rack-cors](https://github.com/cyu/rack-cors) for more details.
 
 Add the gem to your Gemfile
 ```ruby
 gem 'rack-cors'
 ```
+
 Add the CORS middleware to your `config/application.rb`:
 ```ruby
 # Example only, please understand CORS before blindly adding this configuration
