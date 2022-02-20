@@ -18,5 +18,12 @@ module JsonapiPeeps
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    config.middleware.insert_before 0, 'Rack::Cors', :debug => !Rails.env.production?, :logger => (-> { Rails.logger }) do
+      allow do
+        origins '*'
+        resource '*', :headers => :any, :methods => [:get, :post, :patch, :delete, :options]
+      end
+    end
   end
 end

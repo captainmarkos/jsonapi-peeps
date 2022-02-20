@@ -42,6 +42,7 @@ gem "bootsnap", require: false
 
 
 gem 'jsonapi-resources'
+gem 'rack-cors'
 
 
 
