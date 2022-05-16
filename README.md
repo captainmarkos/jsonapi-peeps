@@ -142,7 +142,7 @@ rails generate controller Api::V1::PhoneNumbers --skip-assets
 
 #### Create our resources directory
 
-We need a directory to hold our resources. Let'ss put in under our app directory.
+We need a directory to hold our resources. Let's create it under our app directory.
 ```
 mkdir app/resources
 mkdir app/resources/api
